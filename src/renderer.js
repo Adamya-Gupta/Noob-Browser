@@ -45,3 +45,71 @@ goButton.addEventListener("click", (event) => {
   event.preventDefault();
   handleUrl();
 });
+
+webview.addEventListener("did-navigate", (event) => {
+  const url = event.url;
+  urlInputField.value = url;
+  tabs[currentTabIndex].url = url;
+});
+
+newWindowButton.addEventListener("click",()=>{
+    api.newWindow();
+})
+
+searchButton.addEventListener("click", () => {
+  const url = "https://www.google.com";
+  urlInputField.value = url;
+  webview.src = url;
+  tabs[currentTabIndex].url = url;
+});
+
+backButton.addEventListener("click", () => {
+  webview.goBack();
+});
+
+forwardButton.addEventListener("click", () => {
+  webview.goForward();
+});
+
+reloadButton.addEventListener("click", () => {
+  webview.reload();
+});
+
+// New Tab Functionality
+newTabButton.addEventListener("click", () => {
+  const tab = {
+    title: `Tab ${tabs.length + 1}`,
+    url: "about:blank",
+  };
+  tabs.push(tab);
+  renderTabs();
+  switchToTab(tabs.length - 1);
+});
+newWindowButton.addEventListener("click",()=>{
+    api.newWindow();
+    
+})
+// Render Tabs
+function renderTabs() {
+  tabsContainer.innerHTML = "";
+  tabs.forEach((tab, index) => {
+    const tabElement = document.createElement("div");
+    tabElement.textContent = tab.title;
+    tabElement.className = `tab ${index === currentTabIndex ? "active" : ""}`;
+    tabElement.addEventListener("click", () => switchToTab(index));
+    tabsContainer.appendChild(tabElement);
+  });
+}
+
+// Switch Tabs
+function switchToTab(index) {
+  currentTabIndex = index;
+  const tab = tabs[index];
+  urlInputField.value = tab.url;
+  webview.src = tab.url;
+  renderTabs();
+}
+
+// Initialize with the first tab
+tabs.push({ title: "Tab 1", url: "about:blank" });
+renderTabs();
