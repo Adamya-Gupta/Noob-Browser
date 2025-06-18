@@ -180,7 +180,7 @@ body.dark .new-tab-btn:hover {
   background: #404040;
 }
 
-/* Navigation Bar */
+/* Navigation Bar - FIXED WIDTH */
 #nav-bar {
   display: flex;
   align-items: center;
@@ -188,8 +188,9 @@ body.dark .new-tab-btn:hover {
   padding: 8px 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   gap: 12px;
-  flex-wrap: wrap;
   position: relative;
+  width: 100%; /* Ensure full width */
+  min-width: 100%; /* Prevent shrinking */
 }
 
 body.dark #nav-bar {
@@ -202,12 +203,14 @@ body.dark #nav-bar {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 #address-bar {
   flex-grow: 1;
   display: flex;
-  max-width: 600px;
+  min-width: 200px; /* Minimum width for address bar */
+  max-width: none; /* Remove max-width restriction */
 }
 
 #url-form {
@@ -279,6 +282,7 @@ body.dark #url-input:focus {
   align-items: center;
   justify-content: center;
   color: #495057;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .nav-button:hover {
@@ -309,6 +313,7 @@ body.dark .nav-button:hover {
   padding: 6px;
   border-radius: 6px;
   transition: all 0.2s ease;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 #theme-toggle:hover {
@@ -326,6 +331,7 @@ body.dark #theme-toggle:hover {
   border-radius: 6px;
   cursor: pointer;
   background: transparent;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 /* Loading Indicator */
@@ -366,18 +372,29 @@ body.dark #webview {
 /* RESPONSIVE DESIGN */
 @media (max-width: 768px) {
   #nav-bar {
-    flex-direction: column;
+    padding: 8px 12px;
     gap: 8px;
-  }
-
-  #address-bar {
-    order: 2;
-    max-width: none;
   }
 
   #left-controls,
   #right-controls {
-    order: 1;
+    gap: 6px;
+  }
+
+  .nav-button {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  #theme-toggle {
+    font-size: 18px;
+    padding: 4px;
+  }
+
+  #color-picker {
+    width: 32px;
+    height: 32px;
   }
 
   .tab {
@@ -389,31 +406,39 @@ body.dark #webview {
 
   #url-input {
     font-size: 14px;
+    padding: 8px 45px 8px 14px;
   }
 
-  button {
-    width: 32px;
-    height: 32px;
-    font-size: 16px;
-  }
-
-  .nav-button {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
+  #go {
+    width: 36px;
+    height: 28px;
+    font-size: 12px;
   }
 }
 
 @media (max-width: 500px) {
   #title-bar,
   #nav-bar {
-    padding: 8px;
+    padding: 6px 8px;
+  }
+
+  #nav-bar {
+    gap: 6px;
   }
 
   .nav-button {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  #theme-toggle {
+    font-size: 16px;
+  }
+
+  #color-picker {
+    width: 30px;
+    height: 30px;
   }
 
   .tab {
@@ -426,5 +451,16 @@ body.dark #webview {
   #tabs-container {
     font-size: 11px;
     padding: 6px 8px;
+  }
+
+  #url-input {
+    padding: 8px 40px 8px 12px;
+    font-size: 13px;
+  }
+
+  #go {
+    width: 32px;
+    height: 26px;
+    font-size: 11px;
   }
 }
