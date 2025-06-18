@@ -154,7 +154,7 @@ function createTab() {
 function switchTab(i) {
   currentTab = i;
   const tab = tabs[i];
-  urlIn.value = tab.url === 'about:blank' ? '' : tab.url;
+  urlIn.value = tab.url === '' ? '' : tab.url;
   webview.src = tab.url;
   renderTabs();
 }
@@ -164,7 +164,7 @@ function deleteTab(i, e) {
   
   if (tabs.length === 1) {
     // Don't close the last tab, just reset it
-    tabs[0] = { title: 'New Tab', url: 'about:blank', favicon: null };
+    tabs[0] = { title: 'New Tab', url: '', favicon: null };
     switchTab(0);
     return;
   }
