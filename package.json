@@ -1,8 +1,8 @@
 {
-  "name": "alfabrowser",
-  "productName": "alfabrowser",
+  "name": "noobbrowser",
+  "productName": "noobbrowser",
   "version": "1.0.0",
-  "description": "Alfa Browser for web browsing",
+  "description": "Noob Browser for web browsing",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
