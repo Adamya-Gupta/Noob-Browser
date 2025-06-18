@@ -1,115 +1,126 @@
 import './index.css';
 
-const backButton = document.getElementById("back-button");
-const forwardButton = document.getElementById("forward-button");
-const reloadButton = document.getElementById("reload-button");
-const searchButton = document.getElementById("search-button");
-const newWindowButton = document.getElementById("new-window-button");
-const newTabButton = document.getElementById("new-tab-button");
-const goButton = document.getElementById("go");
-const urlInputField = document.getElementById("url-input");
+const back = document.getElementById("back-button");
+const forward = document.getElementById("forward-button");
+const reload = document.getElementById("reload-button");
+const searchBtn = document.getElementById("search-button");
+const newWindow = document.getElementById("new-window-button");
+const newTabBtn = document.getElementById("new-tab-button");
+const goBtn = document.getElementById("go");
+const urlIn = document.getElementById("url-input");
 const webview = document.getElementById("webview");
 const tabsContainer = document.getElementById("tabs-container");
-
 const colorPicker = document.getElementById("color-picker");
-colorPicker.addEventListener("input", (event) => {
-    const selectedColor = event.target.value;
-    document.body.style.backgroundColor = selectedColor;
-    document.querySelector("#browser-tools").style.backgroundColor = selectedColor;
-    document.querySelector("#tabs-container").style.backgroundColor = selectedColor;
-})
 
-let tabs = [];
-let currentTabIndex = 0;
+let tabs = [], currentTab = 0;
 
-function handleUrl(){
-    let url = "";
-    const inputUrl = urlInputField.value;
-    if(inputUrl.startsWith("http://") || inputUrl.startsWith("https://")){
-        url=inputUrl;
-    }
-    else{
-        url="http://"+inputUrl;
-    }
-    webview.src = url;
-    tabs[currentTabIndex].url=url;
-}
-urlInputField.addEventListener("keydown",(event)=>{
-    if(event.key ==="Enter"){
-        event.preventDefault();
-        handleUrl();
-    }
+// Color picker
+colorPicker.addEventListener("input", e => {
+  const c = e.target.value;
+  document.body.style.backgroundColor = c;
+  document.querySelector("#top-bar").style.backgroundColor = c;
+  document.querySelector("#tabs-container").style.backgroundColor = c;
 });
 
-goButton.addEventListener("click", (event) => {
-  event.preventDefault();
+// Tab structure: { title, url, favicon }
+
+function handleUrl() {
+  let u = urlIn.value.trim();
+  if (!u) return;
+  u = (/^https?:\/\//).test(u) ? u : `https://${u}`;
+  loadURL(u);
+}
+
+function loadURL(u) {
+  webview.src = u;
+  tabs[currentTab].url = u;
+}
+
+// Address bar
+urlIn.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    handleUrl();
+  }
+});
+goBtn.addEventListener("click", e => {
+  e.preventDefault();
   handleUrl();
 });
 
-webview.addEventListener("did-navigate", (event) => {
-  const url = event.url;
-  urlInputField.value = url;
-  tabs[currentTabIndex].url = url;
+// Webview navigation
+back.addEventListener("click", () => webview.goBack());
+forward.addEventListener("click", () => webview.goForward());
+reload.addEventListener("click", () => webview.reload());
+searchBtn.addEventListener("click", () => loadURL("https://www.google.com"));
+newWindow.addEventListener("click", () => api.newWindow());
+newTabBtn.addEventListener("click", createTab);
+
+// Webview events
+webview.addEventListener("did-navigate", e => {
+  urlIn.value = e.url;
+  tabs[currentTab].url = e.url;
 });
-
-newWindowButton.addEventListener("click",()=>{
-    api.newWindow();
-})
-
-searchButton.addEventListener("click", () => {
-  const url = "https://www.google.com";
-  urlInputField.value = url;
-  webview.src = url;
-  tabs[currentTabIndex].url = url;
-});
-
-backButton.addEventListener("click", () => {
-  webview.goBack();
-});
-
-forwardButton.addEventListener("click", () => {
-  webview.goForward();
-});
-
-reloadButton.addEventListener("click", () => {
-  webview.reload();
-});
-
-// New Tab Functionality
-newTabButton.addEventListener("click", () => {
-  const tab = {
-    title: `Tab ${tabs.length + 1}`,
-    url: "about:blank",
-  };
-  tabs.push(tab);
+webview.addEventListener("page-favicon-updated", e => {
+  tabs[currentTab].favicon = e.favicons[0];
   renderTabs();
-  switchToTab(tabs.length - 1);
 });
-newWindowButton.addEventListener("click",()=>{
-    api.newWindow();
-    
-})
-// Render Tabs
+
+// Create a new tab
+function createTab() {
+  tabs.push({ title: `Tab ${tabs.length + 1}`, url: "about:blank", favicon: null });
+  switchTab(tabs.length - 1);
+}
+
+// Switch tab
+function switchTab(i) {
+  currentTab = i;
+  urlIn.value = tabs[i].url;
+  webview.src = tabs[i].url;
+  renderTabs();
+}
+
+// Delete tab
+function deleteTab(i) {
+  tabs.splice(i, 1);
+  if (tabs.length === 0) createTab();
+  if (currentTab >= i) currentTab = Math.max(0, currentTab - 1);
+  switchTab(currentTab);
+}
+
+// Render tabs
 function renderTabs() {
   tabsContainer.innerHTML = "";
-  tabs.forEach((tab, index) => {
-    const tabElement = document.createElement("div");
-    tabElement.textContent = tab.title;
-    tabElement.className = `tab ${index === currentTabIndex ? "active" : ""}`;
-    tabElement.addEventListener("click", () => switchToTab(index));
-    tabsContainer.appendChild(tabElement);
+  tabs.forEach((t, i) => {
+    const div = document.createElement("div");
+    div.className = `tab ${i === currentTab ? 'active' : ''}`;
+    div.dataset.index = i;
+    div.addEventListener("click", () => switchTab(i));
+
+    if (t.favicon) {
+      const img = document.createElement("img");
+      img.src = t.favicon;
+      img.className = "favicon";
+      div.appendChild(img);
+    }
+
+    const span = document.createElement("span");
+    span.textContent = t.title;
+    div.appendChild(span);
+
+    const close = document.createElement("span");
+    close.innerHTML = "&times;";
+    close.className = "close-tab";
+    close.addEventListener("click", e => {
+      e.stopPropagation();
+      deleteTab(i);
+    });
+    div.appendChild(close);
+
+    tabsContainer.appendChild(div);
   });
 }
 
-// Switch Tabs
-function switchToTab(index) {
-  currentTabIndex = index;
-  const tab = tabs[index];
-  urlInputField.value = tab.url;
-  webview.src = tab.url;
-  renderTabs();
-}
-
-// Initialize with the first tab
-tabs.push({ title: "Tab 1", url: "about:blank" });
+// Init
+createTab();
 renderTabs();

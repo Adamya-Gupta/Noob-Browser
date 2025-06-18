@@ -1,42 +1,704 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Alfa Browser</title>
+<head>
+  <meta charset="UTF-8" />
+  <title>Alfa Browser</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-  </head>
-  <body>
-    <div id="browser-tools" style="display: flex; width: 100vh ;">
-      <div id="button-container">
-        <button id="back-button">&larr;</button>
-        <button id="forward-button">&rarr;</button>
-        <button id="reload-button">&#x21bb;</button>
-        <button id="search-button">&#128270;</button>
-        <button id="new-window-button">
-          <img src="./src/assets/newWindow.png" alt="New Window" style="width: 20px; height: 20px; margin-right:8px;"/>
-        </button>
-        <button id="new-tab-button">+</button>
-      </div>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      transition: all 0.3s ease;
+    }
 
-      <form>
-        <input type="text" id="url-input" required/>
-      </form>
-      <button id="go">GO</button>
-      <input type="color" id="color-picker" style="display: none;"/>
-      <label for="color-picker">
-        <img src="./src/assets/color-picker.png" alt="color-picker" style="cursor:pointer; width:26px; height:26px;"/>
-      </label>
+    body.dark {
+      background-color: #1a1a1a;
+      color: #ffffff;
+    }
+
+    /* Title Bar */
+    #title-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8f9fa;
+      padding: 8px 16px;
+      border-bottom: 1px solid #e1e5e9;
+      font-size: 14px;
+      font-weight: 500;
+      user-select: none;
+      -webkit-app-region: drag;
+    }
+
+    body.dark #title-bar {
+      background: #2d2d2d;
+      border-bottom: 1px solid #404040;
+      color: #ffffff;
+    }
+
+    #window-controls {
+      display: flex;
+      gap: 8px;
+      -webkit-app-region: no-drag;
+    }
+
+    .window-control {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .close { background: #ff5f57; }
+    .minimize { background: #ffbd2e; }
+    .maximize { background: #28ca42; }
+
+    /* Tabs Container */
+    #tabs-container {
+      display: flex;
+      align-items: flex-end;
+      background: #f8f9fa;
+      padding: 0 16px;
+      border-bottom: 1px solid #e1e5e9;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    #tabs-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    body.dark #tabs-container {
+      background: #2d2d2d;
+      border-bottom: 1px solid #404040;
+    }
+
+    .tab {
+      background: #e9ecef;
+      border: 1px solid #dee2e6;
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 120px;
+      max-width: 240px;
+      margin-right: 2px;
+      position: relative;
+    }
+
+    body.dark .tab {
+      background: #404040;
+      border-color: #555555;
+      color: #ffffff;
+    }
+
+    .tab:hover {
+      background: #dee2e6;
+    }
+
+    body.dark .tab:hover {
+      background: #505050;
+    }
+
+    .tab.active {
+      background: #ffffff;
+      border-color: #0078d4;
+      border-bottom: 1px solid #ffffff;
+      z-index: 1;
+      margin-bottom: -1px;
+    }
+
+    body.dark .tab.active {
+      background: #1a1a1a;
+      border-color: #0078d4;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    .favicon {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .tab-title {
+      flex-grow: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .close-tab {
+      color: #6c757d;
+      cursor: pointer;
+      font-weight: bold;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 16px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .close-tab:hover {
+      background: #dc3545;
+      color: white;
+    }
+
+    body.dark .close-tab {
+      color: #adb5bd;
+    }
+
+    .new-tab-btn {
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 4px;
+      color: #6c757d;
+      margin-left: 8px;
+    }
+
+    .new-tab-btn:hover {
+      background: #e9ecef;
+    }
+
+    body.dark .new-tab-btn {
+      color: #adb5bd;
+    }
+
+    body.dark .new-tab-btn:hover {
+      background: #404040;
+    }
+
+    /* Navigation Bar */
+    #nav-bar {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      padding: 8px 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    body.dark #nav-bar {
+      background: #1a1a1a;
+      box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1);
+    }
+
+    #left-controls,
+    #right-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #address-bar {
+      flex-grow: 1;
+      display: flex;
+      max-width: 600px;
+    }
+
+    #url-form {
+      width: 100%;
+      display: flex;
+      position: relative;
+    }
+
+    #url-input {
+      width: 100%;
+      padding: 10px 50px 10px 16px;
+      border: 1px solid #ced4da;
+      border-radius: 24px;
+      font-size: 14px;
+      background: #f8f9fa;
+      transition: all 0.2s ease;
+    }
+
+    #url-input:focus {
+      border-color: #0078d4;
+      box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.1);
+      outline: none;
+      background: #ffffff;
+    }
+
+    body.dark #url-input {
+      background: #2d2d2d;
+      border-color: #495057;
+      color: #ffffff;
+    }
+
+    body.dark #url-input:focus {
+      background: #404040;
+    }
+
+    #go {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #0078d4;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      width: 40px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    #go:hover {
+      background: #106ebe;
+    }
+
+    .nav-button {
+      background: #f8f9fa;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #495057;
+    }
+
+    .nav-button:hover {
+      background: #e9ecef;
+      border-color: #adb5bd;
+    }
+
+    .nav-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    body.dark .nav-button {
+      background: #2d2d2d;
+      border-color: #495057;
+      color: #adb5bd;
+    }
+
+    body.dark .nav-button:hover {
+      background: #404040;
+    }
+
+    #theme-toggle {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    #theme-toggle:hover {
+      background: #f8f9fa;
+    }
+
+    body.dark #theme-toggle:hover {
+      background: #2d2d2d;
+    }
+
+    #color-picker {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    /* Webview */
+    #webview {
+      flex-grow: 1;
+      width: 100%;
+      border: none;
+      background: #ffffff;
+    }
+
+    body.dark #webview {
+      background: #1a1a1a;
+    }
+
+    /* Loading Indicator */
+    .loading-indicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #0078d4, #40e0d0);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .loading-indicator.active {
+      animation: loading 2s infinite;
+    }
+
+    @keyframes loading {
+      0% { transform: scaleX(0); }
+      50% { transform: scaleX(0.7); }
+      100% { transform: scaleX(1); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      #nav-bar {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      #address-bar {
+        order: 2;
+        max-width: none;
+      }
+
+      #left-controls,
+      #right-controls {
+        order: 1;
+      }
+
+      .tab {
+        min-width: 100px;
+        max-width: 150px;
+        font-size: 12px;
+        padding: 6px 12px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      #title-bar,
+      #nav-bar {
+        padding: 8px;
+      }
+
+      .nav-button {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+      }
+
+      .tab {
+        min-width: 80px;
+        max-width: 120px;
+        padding: 6px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Title Bar -->
+  <div id="title-bar">
+    <div id="window-controls">
+      <div class="window-control close"></div>
+      <div class="window-control minimize"></div>
+      <div class="window-control maximize"></div>
     </div>
-    <div id="tabs-container" style="display: flex; flex-wrap: nowrap;"></div>
-    <webview id="webview" src=""></webview>
-    <script type="module" src="./src/renderer.js"></script>
-    <!-- <script>
+    <div>Alfa Browser</div>
+    <div></div>
+  </div>
 
-      const colorPicker = document.getElementById("color-picker");
-      colorPicker.addEventListener("input",(event)=>{
-        document.body.style.backgroundColor = event.target.value;
-      })
+  <!-- Tabs Container -->
+  <div id="tabs-container">
+    <button class="new-tab-btn" id="new-tab-button" title="New Tab">+</button>
+  </div>
 
-    </script> -->
-  </body>
+  <!-- Navigation Bar -->
+  <div id="nav-bar">
+    <div class="loading-indicator" id="loading-indicator"></div>
+    
+    <div id="left-controls">
+      <button class="nav-button" id="back-button" title="Back">←</button>
+      <button class="nav-button" id="forward-button" title="Forward">→</button>
+      <button class="nav-button" id="reload-button" title="Reload">⟳</button>
+    </div>
+
+    <div id="address-bar">
+      <form id="url-form">
+        <input type="text" id="url-input" placeholder="Search Google or type a URL" />
+        <button type="submit" id="go">Go</button>
+      </form>
+    </div>
+
+    <div id="right-controls">
+      <button class="nav-button" id="search-button" title="Search">🔍</button>
+      <button id="theme-toggle" title="Toggle Dark Mode">🌙</button>
+      <input type="color" id="color-picker" title="Theme Color" value="#0078d4" />
+      <button class="nav-button" id="new-window-button" title="New Window">⊞</button>
+    </div>
+  </div>
+
+  <!-- Webview -->
+  <webview id="webview" src="about:blank"></webview>
+
+  <script>
+    const back = document.getElementById("back-button");
+    const forward = document.getElementById("forward-button");
+    const reload = document.getElementById("reload-button");
+    const searchBtn = document.getElementById("search-button");
+    const newWindow = document.getElementById("new-window-button");
+    const newTabBtn = document.getElementById("new-tab-button");
+    const goBtn = document.getElementById("go");
+    const urlIn = document.getElementById("url-input");
+    const webview = document.getElementById("webview");
+    const tabsContainer = document.getElementById("tabs-container");
+    const colorPicker = document.getElementById("color-picker");
+    const themeToggle = document.getElementById("theme-toggle");
+    const loadingIndicator = document.getElementById("loading-indicator");
+
+    let tabs = [], currentTab = 0;
+    let isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+    // Initialize dark mode
+    if (isDarkMode) {
+      document.body.classList.add('dark');
+      themeToggle.textContent = '☀️';
+    }
+
+    // Theme toggle
+    themeToggle.addEventListener("click", () => {
+      isDarkMode = !isDarkMode;
+      document.body.classList.toggle('dark', isDarkMode);
+      themeToggle.textContent = isDarkMode ? '☀️' : '🌙';
+      localStorage.setItem('darkMode', isDarkMode);
+    });
+
+    // Color picker
+    colorPicker.addEventListener("input", e => {
+      const color = e.target.value;
+      document.documentElement.style.setProperty('--accent-color', color);
+      
+      // Update button colors
+      const goButton = document.getElementById('go');
+      goButton.style.backgroundColor = color;
+      
+      // Update active tab border color
+      const style = document.createElement('style');
+      style.textContent = `
+        .tab.active { border-color: ${color} !important; }
+        #url-input:focus { border-color: ${color} !important; box-shadow: 0 0 0 3px ${color}1a !important; }
+      `;
+      document.head.appendChild(style);
+    });
+
+    function handleUrl() {
+      let u = urlIn.value.trim();
+      if (!u) return;
+      
+      // Check if it's a search query or URL
+      if (!u.includes('.') && !u.startsWith('http')) {
+        u = `https://www.google.com/search?q=${encodeURIComponent(u)}`;
+      } else if (!(/^https?:\/\//).test(u)) {
+        u = `https://${u}`;
+      }
+      
+      loadURL(u);
+    }
+
+    function loadURL(u) {
+      loadingIndicator.classList.add('active');
+      webview.src = u;
+      tabs[currentTab].url = u;
+      updateTabTitle(currentTab, 'Loading...');
+    }
+
+    function updateTabTitle(index, title) {
+      tabs[index].title = title;
+      renderTabs();
+    }
+
+    // Address bar
+    urlIn.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleUrl();
+      }
+    });
+
+    goBtn.addEventListener("click", e => {
+      e.preventDefault();
+      handleUrl();
+    });
+
+    // Navigation buttons
+    back.addEventListener("click", () => {
+      if (webview.canGoBack()) webview.goBack();
+    });
+
+    forward.addEventListener("click", () => {
+      if (webview.canGoForward()) webview.goForward();
+    });
+
+    reload.addEventListener("click", () => webview.reload());
+    searchBtn.addEventListener("click", () => loadURL("https://www.google.com"));
+    newTabBtn.addEventListener("click", createTab);
+
+    // Webview events
+    webview.addEventListener("did-start-loading", () => {
+      loadingIndicator.classList.add('active');
+      back.disabled = !webview.canGoBack();
+      forward.disabled = !webview.canGoForward();
+    });
+
+    webview.addEventListener("did-stop-loading", () => {
+      loadingIndicator.classList.remove('active');
+      back.disabled = !webview.canGoBack();
+      forward.disabled = !webview.canGoForward();
+    });
+
+    webview.addEventListener("did-navigate", e => {
+      urlIn.value = e.url;
+      tabs[currentTab].url = e.url;
+    });
+
+    webview.addEventListener("did-navigate-in-page", e => {
+      urlIn.value = e.url;
+      tabs[currentTab].url = e.url;
+    });
+
+    webview.addEventListener("page-title-updated", e => {
+      updateTabTitle(currentTab, e.title || 'New Tab');
+    });
+
+    webview.addEventListener("page-favicon-updated", e => {
+      if (e.favicons && e.favicons.length > 0) {
+        tabs[currentTab].favicon = e.favicons[0];
+        renderTabs();
+      }
+    });
+
+    // Tab management
+    function createTab() {
+      const tabNumber = tabs.length + 1;
+      tabs.push({ 
+        title: `New Tab`, 
+        url: "about:blank", 
+        favicon: null 
+      });
+      switchTab(tabs.length - 1);
+      urlIn.focus();
+    }
+
+    function switchTab(i) {
+      currentTab = i;
+      const tab = tabs[i];
+      urlIn.value = tab.url === 'about:blank' ? '' : tab.url;
+      webview.src = tab.url;
+      renderTabs();
+    }
+
+    function deleteTab(i, e) {
+      if (e) e.stopPropagation();
+      
+      if (tabs.length === 1) {
+        // Don't close the last tab, just reset it
+        tabs[0] = { title: 'New Tab', url: 'about:blank', favicon: null };
+        switchTab(0);
+        return;
+      }
+      
+      tabs.splice(i, 1);
+      if (currentTab >= i && currentTab > 0) {
+        currentTab--;
+      }
+      if (currentTab >= tabs.length) {
+        currentTab = tabs.length - 1;
+      }
+      switchTab(currentTab);
+    }
+
+    function renderTabs() {
+      // Clear existing tabs (but keep the + button)
+      const existingTabs = tabsContainer.querySelectorAll('.tab');
+      existingTabs.forEach(tab => tab.remove());
+
+      tabs.forEach((tab, i) => {
+        const tabElement = document.createElement("div");
+        tabElement.className = `tab ${i === currentTab ? 'active' : ''}`;
+        tabElement.addEventListener("click", () => switchTab(i));
+
+        if (tab.favicon) {
+          const favicon = document.createElement("img");
+          favicon.src = tab.favicon;
+          favicon.className = "favicon";
+          favicon.onerror = () => favicon.style.display = 'none';
+          tabElement.appendChild(favicon);
+        }
+
+        const title = document.createElement("span");
+        title.className = "tab-title";
+        title.textContent = tab.title || 'New Tab';
+        title.title = tab.title || 'New Tab';
+        tabElement.appendChild(title);
+
+        const closeBtn = document.createElement("span");
+        closeBtn.innerHTML = "×";
+        closeBtn.className = "close-tab";
+        closeBtn.title = "Close tab";
+        closeBtn.addEventListener("click", (e) => deleteTab(i, e));
+        tabElement.appendChild(closeBtn);
+
+        // Insert before the + button
+        tabsContainer.insertBefore(tabElement, newTabBtn);
+      });
+    }
+
+    // Initialize with one tab
+    if (tabs.length === 0) {
+      createTab();
+    }
+    renderTabs();
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch(e.key) {
+          case 't':
+            e.preventDefault();
+            createTab();
+            break;
+          case 'w':
+            e.preventDefault();
+            deleteTab(currentTab);
+            break;
+          case 'r':
+            e.preventDefault();
+            webview.reload();
+            break;
+          case 'l':
+            e.preventDefault();
+            urlIn.select();
+            break;
+        }
+      }
+    });
+  </script>
+</body>
 </html>
